@@ -35,6 +35,8 @@ import sys
 import re
 import argparse
 
+__author__ = "Justin Rhuebottom w/guidance from Daniel's demo session"
+
 
 def extract_names(filename):
     """
@@ -43,8 +45,30 @@ def extract_names(filename):
     the name-rank strings in alphabetical order.
     ['2006', 'Aaliyah 91', 'Aaron 57', 'Abagail 895', ...]
     """
+    with open(filename) as f:
+        text = f.read()
+
     names = []
-    # +++your code here+++
+    # get year from html file
+    pattern = r'Popularity in (\d\d\d\d)'
+    year_match = re.search(pattern, text)
+    year = year_match.group(1)
+    names.append(year)
+
+    # get name-rank strings
+    pattern = r'<td>(\d+)</td><td>(\w+)</td><td>(\w+)</td>'
+    names_ranks = re.findall(pattern, text)
+    names_to_rank = {}
+    for rank_tuple in names_ranks:
+        rank, boy_name, girl_name = rank_tuple
+        if boy_name not in names_to_rank:
+            names_to_rank[boy_name] = rank
+        if girl_name not in names_to_rank:
+            names_to_rank[girl_name] = rank
+
+    sorted_names = sorted(names_to_rank.keys())
+    for name in sorted_names:
+        names.append(f"{name} {names_to_rank[name]}")
     return names
 
 
@@ -82,7 +106,14 @@ def main(args):
     # Use the create_summary flag to decide whether to print the list
     # or to write the list to a summary file (e.g. `baby1990.html.summary`).
 
-    # +++your code here+++
+    for filename in file_list:
+        names = extract_names(filename)
+        text = '\n'.join(names)
+        if create_summary:
+            with open(f'{filename}.summary', 'w') as f:
+                f.write(text)
+        else:
+            print(text)
 
 
 if __name__ == '__main__':
